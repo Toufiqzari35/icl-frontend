@@ -20,6 +20,7 @@ export default function Entity({
   onClickView,
   onClickAdd,
   onClickEdit,
+  onClickDelete,
 }) {
   return (
     <Box sx={{ width: `${boxWidth}%` }}>
@@ -71,7 +72,7 @@ export default function Entity({
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
-                        <IconButton>
+                        <IconButton onClick={() => onClickDelete(row._id)}>
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>

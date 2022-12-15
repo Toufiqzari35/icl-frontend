@@ -38,6 +38,7 @@ const AccountForm = (props) => {
         totalCount: totalCountRef.current.value,
       })
       .then((res) => {
+        console.log('res', res.data)
         props.onCloseOverlay()
         props.onRefresh()
       })
@@ -91,6 +92,7 @@ const TeamForm = (props) => {
     axios
       .post(BASE_URL + '/api/v1/admin/team/add', teamFormData)
       .then((res) => {
+        console.log('res', res.data)
         // close overlay and refresh the teams
         props.onCloseOverlay()
         props.onRefresh()
@@ -147,6 +149,7 @@ const PlayerForm = (props) => {
     axios
       .post(BASE_URL + '/api/v1/admin/player/add', playerFormData)
       .then((res) => {
+        console.log('res', res.data)
         // close overlay and refresh players
         props.onCloseOverlay()
         props.onRefresh()
@@ -301,6 +304,27 @@ export default function ManageEntities() {
     })
   }
 
+  const deleteHandler = (entityName, entityId) => {
+    const api = `${BASE_URL}/api/v1/admin/${entityName}/${entityId}`
+    axios.delete(api).then((res) => {
+      console.log('DELETE - res', res.data)
+      if (res.data.status === 'ok') {
+        switch (entityName) {
+          case 'account':
+            refreshAccounts()
+            break
+          case 'player':
+            refreshPlayers()
+            break
+          case 'team':
+            refreshTeams()
+          default:
+            console.log('unknown entity name')
+        }
+      }
+    })
+  }
+
   const closeModalHandler = () => {
     setModal(null)
     setData(null)
@@ -363,6 +387,7 @@ export default function ManageEntities() {
           onClickAdd={openModalHandler.bind(null, 'account')}
           onClickEdit={openEditModalHandler.bind(null, 'account')}
           onClickView={viewHandler.bind(null, 'account')}
+          onClickDelete={deleteHandler.bind(null, 'account')}
         />
         <Entity
           rows={teams}
@@ -371,6 +396,7 @@ export default function ManageEntities() {
           onClickAdd={openModalHandler.bind(null, 'team')}
           onClickEdit={openEditModalHandler.bind(null, 'team')}
           onClickView={viewHandler.bind(null, 'team')}
+          onClickDelete={deleteHandler.bind(null, 'team')}
         />
       </div>
       <Entity
@@ -380,6 +406,7 @@ export default function ManageEntities() {
         onClickAdd={openModalHandler.bind(null, 'player')}
         onClickEdit={openEditModalHandler.bind(null, 'player')}
         onClickView={viewHandler.bind(null, 'player')}
+        onClickDelete={deleteHandler.bind(null, 'player')}
       />
     </React.Fragment>
   )
