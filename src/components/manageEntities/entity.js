@@ -55,24 +55,35 @@ export default function Entity({
               {rows.map((row, index) => {
                 const labelId = `enhanced-table-checkbox-${index}`
                 return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      onClick={() => onClickView(row._id)}
-                    >
+                  <TableRow
+                    hover
+                    role="checkbox"
+                    tabIndex={-1}
+                    key={row.name}
+                    onClick={() => onClickView(row._id)}
+                  >
+                    <TableCell component="th" id={labelId} scope="row">
                       {row.name}
                     </TableCell>
                     <TableCell align="right">{row._id}</TableCell>
                     <TableCell align="right">
                       <Tooltip title="Edit">
-                        <IconButton onClick={() => onClickEdit(row._id)}>
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onClickEdit(row._id)
+                          }}
+                        >
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
-                        <IconButton onClick={() => onClickDelete(row._id)}>
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onClickDelete(row._id)
+                          }}
+                        >
                           <DeleteIcon />
                         </IconButton>
                       </Tooltip>

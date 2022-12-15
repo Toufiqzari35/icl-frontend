@@ -5,11 +5,10 @@ import Entity from './entity'
 import Modal from '../../UI/Modal'
 import classes from './form.module.css'
 
-// const BASE_URL = process.env.REACT_APP_BASE_URL || 'https://icl.up.railway.app'
+// constants
 const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:8000'
 
 const ViewEntity = (props) => {
-  console.log('view-props', props)
   return (
     <ul>
       {Object.entries(props.data).map(([key, value]) => {
@@ -31,17 +30,25 @@ const AccountForm = (props) => {
 
   const formSubmitHandler = (e) => {
     e.preventDefault()
+    const payload = {
+      name: nameRef.current.value,
+      totalCount: totalCountRef.current.value,
+    }
+    if (props.isEdit) payload.accountId = props.data._id
+
     // POST request to backend and then close the overlay and refresh the accounts
-    axios
-      .post(BASE_URL + '/api/v1/admin/account/add', {
-        name: nameRef.current.value,
-        totalCount: totalCountRef.current.value,
-      })
-      .then((res) => {
-        console.log('res', res.data)
-        props.onCloseOverlay()
-        props.onRefresh()
-      })
+    const api =
+      BASE_URL +
+      (props.isEdit
+        ? '/api/v1/admin/account/edit'
+        : '/api/v1/admin/account/add')
+    console.log('api', api)
+    console.log('PAYLOAD', payload)
+    axios.post(api, payload).then((res) => {
+      console.log('res', res.data)
+      props.onCloseOverlay()
+      props.onRefresh()
+    })
   }
 
   return (
@@ -87,16 +94,18 @@ const TeamForm = (props) => {
     const teamFormData = new FormData()
     teamFormData.append('name', nameRef.current.value)
     teamFormData.append('image', imageRef.current.files[0])
+    if (props.isEdit) teamFormData.append('teamId', props.data._id)
 
     // POST request to add team
-    axios
-      .post(BASE_URL + '/api/v1/admin/team/add', teamFormData)
-      .then((res) => {
-        console.log('res', res.data)
-        // close overlay and refresh the teams
-        props.onCloseOverlay()
-        props.onRefresh()
-      })
+    const api =
+      BASE_URL +
+      (props.isEdit ? '/api/v1/admin/team/edit' : '/api/v1/admin/team/add')
+    axios.post(api, teamFormData).then((res) => {
+      console.log('res', res.data)
+      // close overlay and refresh the teams
+      props.onCloseOverlay()
+      props.onRefresh()
+    })
   }
 
   return (
@@ -144,16 +153,18 @@ const PlayerForm = (props) => {
     playerFormData.append('skill', skillRef.current.value)
     playerFormData.append('bio', bioRef.current.value)
     playerFormData.append('image', imageRef.current.files[0])
+    if (props.isEdit) playerFormData.append('playerId', props.data._id)
 
     // POST add player
-    axios
-      .post(BASE_URL + '/api/v1/admin/player/add', playerFormData)
-      .then((res) => {
-        console.log('res', res.data)
-        // close overlay and refresh players
-        props.onCloseOverlay()
-        props.onRefresh()
-      })
+    const api =
+      BASE_URL +
+      (props.isEdit ? '/api/v1/admin/player/edit' : '/api/v1/admin/player/add')
+    axios.post(api, playerFormData).then((res) => {
+      console.log('res', res.data)
+      // close overlay and refresh players
+      props.onCloseOverlay()
+      props.onRefresh()
+    })
   }
 
   return (
@@ -167,16 +178,18 @@ const PlayerForm = (props) => {
       <div className={classes.input}>
         <label htmlFor="accountId">Account</label>
         <select id="accountId" ref={accountIdRef}>
-          {props.accounts.map((el) => {
-            if (props.isEdit && props.data.accountId === el._id) {
-              return (
-                <option value={el._id} selected>
-                  {el.name}
-                </option>
-              )
-            }
-            return <option value={el._id}>{el.name}</option>
-          })}
+          {props.accounts.map((account) => (
+            <option
+              value={account._id}
+              selected={
+                props.isEdit &&
+                props.data.accountId &&
+                account._id === props.data.accountId
+              }
+            >
+              {account.name}
+            </option>
+          ))}
         </select>
       </div>
       <div className={classes.input}>
@@ -213,16 +226,16 @@ const PlayerForm = (props) => {
       <div className={classes.input}>
         <label htmlFor="skill">Skill</label>
         <select id="skill" ref={skillRef}>
-          {props.skills.map((el) => {
-            if (props.isEdit && props.data.skill === el) {
-              return (
-                <option value={el} selected>
-                  {el}
-                </option>
-              )
-            }
-            return <option value={el}>{el}</option>
-          })}
+          {props.skills.map((skill) => (
+            <option
+              value={skill}
+              selected={
+                props.isEdit && props.data.skill && skill === props.data.skill
+              }
+            >
+              {skill}
+            </option>
+          ))}
         </select>
       </div>
       <div className={classes.input}>
@@ -277,8 +290,6 @@ export default function ManageEntities() {
   }, [])
 
   const viewHandler = (entityName, entityId) => {
-    console.log('entityname', entityName)
-    console.log('id', entityId)
     const api = `${BASE_URL}/api/v1/${entityName}/${entityId}`
     axios.get(api).then((res) => {
       if (res.data.status === 'ok') {
@@ -290,7 +301,6 @@ export default function ManageEntities() {
 
   const openModalHandler = (modalType) => {
     setModal(modalType)
-    setIsEdit(false)
   }
 
   const openEditModalHandler = (entityName, entityId) => {
@@ -341,6 +351,7 @@ export default function ManageEntities() {
 
   return (
     <React.Fragment>
+      {/* show modals */}
       {isView && data && (
         <Modal onCloseOverlay={closeModalHandler}>
           <ViewEntity data={data} />
@@ -379,6 +390,7 @@ export default function ManageEntities() {
         </Modal>
       )}
 
+      {/* show entities */}
       <div style={{ display: 'flex' }}>
         <Entity
           rows={accounts}
