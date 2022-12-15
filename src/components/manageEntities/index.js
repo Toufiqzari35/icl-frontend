@@ -10,16 +10,24 @@ const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:8000'
 
 const ViewEntity = (props) => {
   return (
-    <ul>
-      {Object.entries(props.data).map(([key, value]) => {
-        return (
-          <li className={classes.li}>
-            <div className={classes.key}>{key}</div>
-            <div className={classes.value}>{value}</div>
-          </li>
-        )
-      })}
-    </ul>
+    <React.Fragment>
+      <ul>
+        {Object.entries(props.data).map(([key, value]) => {
+          return (
+            <li className={classes.li}>
+              <div className={classes.key}>{key}</div>
+              <div className={classes.value}>{value}</div>
+            </li>
+          )
+        })}
+      </ul>
+      {props.data.imageUrl && (
+        <img
+          src={`${BASE_URL}/${props.data.imageUrl}`}
+          style={{ width: '50%', marginLeft: '20%' }}
+        />
+      )}
+    </React.Fragment>
   )
 }
 
