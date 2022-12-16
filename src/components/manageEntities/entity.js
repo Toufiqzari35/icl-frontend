@@ -32,7 +32,7 @@ export default function Entity({
           mx: 'auto',
           borderRadius: 2,
           height: 300,
-          overflowY: 'scroll',
+          overflowY: 'auto',
         }}
       >
         <Typography
