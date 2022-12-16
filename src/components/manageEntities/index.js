@@ -16,7 +16,7 @@ const ViewEntity = (props) => {
           return (
             <li className={classes.li}>
               <div className={classes.key}>{key}</div>
-              <div className={classes.value}>{value}</div>
+              <div className={classes.value}>{JSON.stringify(value)}</div>
             </li>
           )
         })}
@@ -284,7 +284,12 @@ export default function ManageEntities() {
   const refreshTeams = useCallback(() => {
     axios.get(BASE_URL + '/api/v1/team').then((res) => {
       if (res.data.status === 'ok') {
-        setTeams(res.data.teams)
+        setTeams(
+          res.data.teams.map((team) => ({
+            ...team,
+            teamOwnerName: team.teamOwner ? team.teamOwner.playerId.name : '',
+          }))
+        )
       }
     })
   }, [])
@@ -410,24 +415,30 @@ export default function ManageEntities() {
           onClickDelete={deleteHandler.bind(null, 'account')}
         />
         <Entity
+          rows={players}
+          title={'Players'}
+          boxWidth={50}
+          onClickAdd={openModalHandler.bind(null, 'player')}
+          onClickEdit={openEditModalHandler.bind(null, 'player')}
+          onClickView={viewHandler.bind(null, 'player')}
+          onClickDelete={deleteHandler.bind(null, 'player')}
+        />
+      </div>
+      <div style={{ display: 'flex' }}>
+        <Entity
           rows={teams}
           title={'Teams'}
-          boxWidth={50}
+          boxWidth={70}
           onClickAdd={openModalHandler.bind(null, 'team')}
           onClickEdit={openEditModalHandler.bind(null, 'team')}
           onClickView={viewHandler.bind(null, 'team')}
           onClickDelete={deleteHandler.bind(null, 'team')}
+          additionalColums={['teamOwnerName']}
         />
+        <div style={{ margin: 'auto' }}>
+          <button>Set Team Owner</button>
+        </div>
       </div>
-      <Entity
-        rows={players}
-        title={'Players'}
-        boxWidth={100}
-        onClickAdd={openModalHandler.bind(null, 'player')}
-        onClickEdit={openEditModalHandler.bind(null, 'player')}
-        onClickView={viewHandler.bind(null, 'player')}
-        onClickDelete={deleteHandler.bind(null, 'player')}
-      />
     </React.Fragment>
   )
 }

@@ -69,4 +69,5 @@
   border: 1px solid #ccc;
   font: inherit;
   padding-left: 0.5rem;
+  line-break: anywhere;
 }

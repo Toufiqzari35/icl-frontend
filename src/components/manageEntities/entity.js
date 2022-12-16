@@ -21,6 +21,7 @@ export default function Entity({
   onClickAdd,
   onClickEdit,
   onClickDelete,
+  additionalColums = [],
 }) {
   return (
     <Box sx={{ width: `${boxWidth}%` }}>
@@ -66,6 +67,9 @@ export default function Entity({
                       {row.name}
                     </TableCell>
                     <TableCell align="right">{row._id}</TableCell>
+                    {additionalColums.map((col) => (
+                      <TableCell align="right">{row[col]}</TableCell>
+                    ))}
                     <TableCell align="right">
                       <Tooltip title="Edit">
                         <IconButton
