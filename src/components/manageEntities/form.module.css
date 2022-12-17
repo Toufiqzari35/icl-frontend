@@ -51,7 +51,17 @@
   border: none;
 }
 
-.li {
+.view-panel {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.view-panel ul {
+  margin: 0;
+  padding: 0;
+}
+
+.view-panel ul li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -70,4 +80,12 @@
   font: inherit;
   padding-left: 0.5rem;
   line-break: anywhere;
+}
+
+.image-panel {
+  text-align: center;
+}
+
+.image-panel img {
+  width: 50%;
 }
