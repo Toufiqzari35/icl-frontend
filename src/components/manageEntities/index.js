@@ -415,6 +415,7 @@ export default function ManageEntities() {
             break
           case 'team':
             refreshTeams()
+            break
           default:
             console.log('unknown entity name')
         }
@@ -479,7 +480,12 @@ export default function ManageEntities() {
       {/* set team owner form */}
       {modal === 'teamOwner' && (
         <Modal onCloseOverlay={closeModalHandler}>
-          <TeamOwnerForm teams={teams} players={players} />
+          <TeamOwnerForm
+            teams={teams}
+            players={players}
+            onCloseOverlay={closeModalHandler}
+            onRefresh={refreshTeams}
+          />
         </Modal>
       )}
 
