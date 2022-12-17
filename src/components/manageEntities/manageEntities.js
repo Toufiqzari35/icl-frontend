@@ -3,7 +3,7 @@ import axios from 'axios'
 
 import Entity from './entity'
 import Modal from '../../UI/Modal'
-import classes from './form.module.css'
+import classes from './manageEntities.module.css'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
