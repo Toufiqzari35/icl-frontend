@@ -484,7 +484,11 @@ export default function ManageEntities() {
       )}
 
       {/* show entities */}
-      <div style={{ display: 'flex' }}>
+      <Box
+        sx={{
+          display: 'flex',
+        }}
+      >
         <Entity
           rows={accounts}
           title={'Accounts'}
@@ -503,7 +507,7 @@ export default function ManageEntities() {
           onClickView={viewHandler.bind(null, 'player')}
           onClickDelete={deleteHandler.bind(null, 'player')}
         />
-      </div>
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -512,7 +516,7 @@ export default function ManageEntities() {
         <Entity
           rows={teams}
           title={'Teams'}
-          boxWidth={80}
+          boxWidth={85}
           onClickAdd={openModalHandler.bind(null, 'team')}
           onClickEdit={openEditModalHandler.bind(null, 'team')}
           onClickView={viewHandler.bind(null, 'team')}
@@ -521,9 +525,9 @@ export default function ManageEntities() {
         />
         <Card
           sx={{
-            my: 2,
-            mx: 'auto',
+            m: 2,
             borderRadius: 2,
+            width: '15%',
             height: 300,
             overflowY: 'auto',
           }}

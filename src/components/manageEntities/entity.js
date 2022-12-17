@@ -27,9 +27,7 @@ export default function Entity({
     <Box sx={{ width: `${boxWidth}%` }}>
       <Paper
         sx={{
-          width: '90%',
-          my: 2,
-          mx: 'auto',
+          m: 2,
           borderRadius: 2,
           height: 300,
           overflowY: 'auto',
