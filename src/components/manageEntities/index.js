@@ -223,6 +223,8 @@ const PlayerForm = (props) => {
   const skillRef = useRef()
   const bioRef = useRef()
   const imageRef = useRef()
+  const genderRef = useRef()
+  const ratingRef = useRef()
 
   const formSubmitHandler = (e) => {
     e.preventDefault()
@@ -234,6 +236,8 @@ const PlayerForm = (props) => {
     playerFormData.append('skill', skillRef.current.value)
     playerFormData.append('bio', bioRef.current.value)
     playerFormData.append('image', imageRef.current.files[0])
+    playerFormData.append('gender', genderRef.current.value)
+    playerFormData.append('rating', ratingRef.current.value)
     if (props.isEdit) playerFormData.append('playerId', props.data._id)
 
     // POST add player
@@ -294,6 +298,23 @@ const PlayerForm = (props) => {
         />
       </div>
       <div className={classes.input}>
+        <label htmlFor="gender">Gender</label>
+        <select id="gender" ref={genderRef}>
+          {props.gender.map((gender) => (
+            <option
+              value={gender}
+              selected={
+                props.isEdit &&
+                props.data.gender &&
+                gender === props.data.gender
+              }
+            >
+              {gender}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className={classes.input}>
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -318,6 +339,17 @@ const PlayerForm = (props) => {
             </option>
           ))}
         </select>
+      </div>
+      <div className={classes.input}>
+        <label htmlFor="rating">Rating</label>
+        <input
+          id="rating"
+          type="number"
+          ref={ratingRef}
+          defaultValue={
+            props.isEdit && props.data.rating ? props.data.rating : ''
+          }
+        />
       </div>
       <div className={classes.input}>
         <label htmlFor="bio">Bio</label>
@@ -471,6 +503,7 @@ export default function ManageEntities() {
             data={data}
             accounts={accounts}
             skills={['Batsman', 'Bowler', 'All Rounder', 'Spinner']}
+            gender={['Male', 'Female', 'Other']}
             onCloseOverlay={closeModalHandler}
             onRefresh={refreshPlayers}
           />
