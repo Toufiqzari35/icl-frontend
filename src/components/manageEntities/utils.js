@@ -9,4 +9,10 @@ const startAuction = () => {
   })
 }
 
-export default startAuction
+const pauseAuction = () => {
+  axios.get(BASE_URL + '/api/v1/auction/pause').then((res) => {
+    console.log('-------auction-paused---------')
+  })
+}
+
+export { startAuction, pauseAuction }
