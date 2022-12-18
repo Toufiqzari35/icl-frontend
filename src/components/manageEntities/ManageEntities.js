@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
+
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
@@ -12,6 +13,7 @@ import TeamOwnerForm from './TeamOwnerForm'
 import AccountForm from './AccountForm'
 import TeamForm from './TeamForm'
 import PlayerForm from './PlayerForm'
+import startAuction from './startAuction'
 
 // constants
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
@@ -223,6 +225,9 @@ export default function ManageEntities() {
               onClick={openModalHandler.bind(null, 'teamOwner')}
             >
               Set team owner
+            </Button>
+            <Button variant="contained" onClick={startAuction}>
+              start auction
             </Button>
           </CardContent>
         </Card>

@@ -5,7 +5,8 @@ import SignIn from './components/signin.js'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import EnhancedTable from './components/teamslist'
 import AccountList from './components/accountslist'
-import ManageEntities from './components/manageEntities/manageEntities'
+import ManageEntities from './components/manageEntities/ManageEntities'
+import Auction from './components/auction'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/teamlist" element={<EnhancedTable />} />
           <Route path="/accountlist" element={<AccountList />} />
           <Route path="/manage" element={<ManageEntities />} />
+          <Route path="/auction" element={<Auction />} />
         </Routes>
       </Router>
     </div>
