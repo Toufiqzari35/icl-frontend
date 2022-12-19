@@ -9,11 +9,150 @@ import Grid from '@mui/material/Grid'
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
 const socket = io(BASE_URL)
 
+const DEFAULT_STATE = {
+  remainingPlayers: ['639d5fd95d59567fc12d5536', '639d6d135d59567fc12d5690'],
+  unsoldPlayers: [],
+  soldPlayers: ['6398b69a4d9464b5c636fe2a', '6398d76a4d9464b5c636fe82'],
+  playerLastBid: {
+    '6398b69a4d9464b5c636fe2a': 1,
+    '6398d76a4d9464b5c636fe82': 2,
+  },
+  currentPlayer: {
+    id: '6398e8499215db78db45a354',
+    bidAmount: 1400,
+    bids: [3, 4, 5, 6],
+    clock: 2,
+  },
+  bids: [
+    {
+      playerId: '6398b69a4d9464b5c636fe2a',
+      teamId: '639b5c6195ed6fa4cf61c3dd',
+      amount: 1000,
+    },
+    {
+      playerId: '6398b69a4d9464b5c636fe2a',
+      teamId: '639d4a67ddfe568981cf801d',
+      amount: 1000,
+    },
+    {
+      playerId: '6398d76a4d9464b5c636fe82',
+      teamId: '639b5c6195ed6fa4cf61c3dd',
+      amount: 1000,
+    },
+    {
+      playerId: '6398e8499215db78db45a354',
+      teamId: '639d4a67ddfe568981cf801d',
+      amount: 1000,
+    },
+    {
+      playerId: '6398e8499215db78db45a354',
+      teamId: '639b5c6195ed6fa4cf61c3dd',
+      amount: 1000,
+    },
+    {
+      playerId: '6398e8499215db78db45a354',
+      teamId: '639d4a67ddfe568981cf801d',
+      amount: 1000,
+    },
+    {
+      playerId: '6398e8499215db78db45a354',
+      teamId: '639b5c6195ed6fa4cf61c3dd',
+      amount: 1000,
+    },
+  ],
+  _id: 'oFqkLXR9K6z3b371',
+}
+
 const Auction = () => {
   console.log('---------auction--------')
-  const [auctionData, setAuctionData] = useState(null)
+  const [auctionData, setAuctionData] = useState()
+  const [mappedData, setMappedData] = useState()
   const [teams, setTeams] = useState([])
   const [players, setPlayers] = useState([])
+
+  const updateMappedData = () => {
+    const clock = auctionData.currentPlayer
+      ? auctionData.currentPlayer.clock
+      : null
+    const playerObj = auctionData.currentPlayer
+      ? players.find((player) => player._id === auctionData.currentPlayer.id)
+      : null
+    const currentPlayer = playerObj
+      ? {
+          name: playerObj.name,
+          rating: playerObj.rating,
+          skill: playerObj.skill,
+        }
+      : null
+    const bidAmount = auctionData.currentPlayer
+      ? auctionData.currentPlayer.bidAmount
+      : null
+    const bidHistory = auctionData.currentPlayer
+      ? auctionData.currentPlayer.bids //[0,1,2]
+          .map((bidId) => auctionData.bids[bidId]) //[{playerId, teamId, amount}]
+          .map((bid) => {
+            const player = players.find((player) => player._id === bid.playerId)
+            const team = teams.find((team) => team._id === bid.teamId)
+            return {
+              teamName: team.name,
+              teamImage: team.imageUrl,
+              amount: bid.amount,
+            }
+          })
+      : []
+    bidHistory.reverse()
+    const lastBid = bidHistory.length > 0 ? bidHistory[0] : null
+    const teamStats = {}
+    teams.forEach((team) => {
+      teamStats[team._id] = {
+        teamName: team.name,
+        batsman: 0,
+        bowlers: 0,
+        allRounders: 0,
+        total: 0,
+      }
+    })
+    const previousAuctions = []
+    auctionData.soldPlayers.forEach((playerId) => {
+      const bidId = auctionData.playerLastBid[playerId]
+      const bid = auctionData.bids[bidId]
+      const teamId = bid.teamId
+      const team = teams.find((team) => team._id === bid.teamId)
+      const player = players.find((player) => player._id === playerId)
+      previousAuctions.push({
+        playerName: player.name,
+        playerImage: player.imageUrl,
+        teamName: team.name,
+        teamImage: team.imageUrl,
+        amount: bid.amount,
+      })
+      if (player.skill) {
+        switch (player.skill.toLowerCase()) {
+          case 'batsman':
+            teamStats[teamId].batsman += 1
+            break
+          case 'bowler':
+            teamStats[teamId].bowlers += 1
+            break
+          case 'all rounder':
+            teamStats[teamId].bowlers += 1
+            break
+          default:
+            console.log('skill', player.skill, 'not present')
+        }
+      }
+      teamStats[bid.teamId].total += 1
+    })
+    setMappedData({
+      clock,
+      currentPlayer,
+      bidAmount,
+      lastBid,
+      bidHistory,
+      teamStats,
+      previousAuctions,
+    })
+  }
 
   const updateData = () => {
     axios
@@ -33,6 +172,17 @@ const Auction = () => {
     axios.get(BASE_URL + '/api/v1/player').then((res) => {
       setPlayers(res.data.players)
     })
+  }
+
+  const makeBid = (teamId) => {
+    axios
+      .post(BASE_URL + '/api/v1/auction/bid', {
+        playerId: auctionData.currentPlayer.id,
+        teamId: teamId,
+      })
+      .then((res) => {
+        console.log('posting-bid', res, res)
+      })
   }
 
   // update data and initialize socket functions
@@ -56,54 +206,44 @@ const Auction = () => {
     }
   }, [])
 
-  const makeBid = (teamId) => {
-    axios
-      .post(BASE_URL + '/api/v1/auction/bid', {
-        playerId: auctionData.currentPlayer.id,
-        teamId: teamId,
-      })
-      .then((res) => {
-        console.log('posting-bid', res, res)
-      })
-  }
-
-  const getMappedPlayers = (teamId) => {
-    const playerIds = []
-    for (let playerId in auctionData.playerLastBid) {
-      const bidId = auctionData.playerLastBid[playerId]
-      const bid = auctionData.bids[bidId]
-      if (bid.teamId === teamId) playerIds.push(playerId)
+  useEffect(() => {
+    if (teams.length > 0 && players.length > 0 && auctionData) {
+      updateMappedData()
     }
-    const playerList = players
-      .filter((player) => playerIds.includes(player._id))
-      .map((player) => ({
-        name: player.name,
-        skill: player.skill,
-      }))
-    return playerList
-  }
+  }, [teams, players, auctionData])
 
   return (
-    auctionData && (
+    mappedData && (
       <React.Fragment>
         <div style={{ display: 'flex' }}>
-          <Box sx={{ width: '30%', height: 600, border: '1px solid' }}>
+          <Box sx={{ width: '30%', height: 650, border: '1px solid' }}>
             <Paper
               sx={{
                 m: 2,
                 borderRadius: 2,
-                height: 300,
+                height: 100,
                 overflowY: 'auto',
               }}
             >
-              <p>
-                PlayerId:
-                {auctionData.currentPlayer && auctionData.currentPlayer.id}
-              </p>
-              <p>Next in auction</p>
-              {auctionData.remainingPlayers.map((player) => (
-                <p>{player}</p>
-              ))}
+              {mappedData.currentPlayer && (
+                <div>
+                  <p>{mappedData.currentPlayer.name}</p>
+                  <p>
+                    {mappedData.currentPlayer.skill}{' '}
+                    {mappedData.currentPlayer.rating}/10
+                  </p>
+                </div>
+              )}
+            </Paper>
+            <Paper
+              sx={{
+                m: 2,
+                borderRadius: 2,
+                height: 200,
+                overflowY: 'auto',
+              }}
+            >
+              <p>Upcoming</p>
             </Paper>
             <Paper
               sx={{
@@ -114,17 +254,16 @@ const Auction = () => {
               }}
             >
               <p>Previously Auctioned</p>
-              {auctionData.soldPlayers.map((soldPlayer) => {
-                return <p>{soldPlayer}</p>
-              })}
-
-              <p>Unsold</p>
-              {auctionData.unsoldPlayers.map((player) => (
-                <p>{player}</p>
+              {mappedData.previousAuctions.map((data) => (
+                <div style={{ border: '1px solid' }}>
+                  <p>
+                    {data.playerName} sold to {data.teamName} for {data.amount}
+                  </p>
+                </div>
               ))}
             </Paper>
           </Box>
-          <Box sx={{ width: '70%', height: 600, border: '1px solid' }}>
+          <Box sx={{ width: '70%', height: 650, border: '1px solid' }}>
             <Paper
               sx={{
                 m: 2,
@@ -135,37 +274,37 @@ const Auction = () => {
                 justifyContent: 'space-around',
               }}
             >
-              {auctionData.currentPlayer && (
+              {mappedData.currentPlayer && (
                 <React.Fragment>
                   <div>
-                    <p>
-                      Last Bid:{' '}
-                      {
-                        auctionData.currentPlayer.bids[
-                          auctionData.currentPlayer.bids.length - 1
-                        ]
-                      }
-                    </p>
-                    <p>Clock: {auctionData.currentPlayer.clock}</p>
-                    <p>
-                      CurrentBidAmount:{auctionData.currentPlayer.bidAmount}
-                    </p>
-                    <p>BID</p>
-                    <button
-                      onClick={makeBid.bind(null, '639b5c6195ed6fa4cf61c3dd')}
+                    {mappedData.lastBid && (
+                      <p>
+                        LastBid {mappedData.lastBid.amount} by{' '}
+                        {mappedData.lastBid.teamName}
+                      </p>
+                    )}
+                    <p>Clock: {mappedData.clock}</p>
+                    <p>Bid: {mappedData.bidAmount}</p>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gap: '0.5rem',
+                        gridTemplateColumns: '30% 30% 30%',
+                      }}
                     >
-                      SPOC
-                    </button>
-                    <button
-                      onClick={makeBid.bind(null, '639d4a67ddfe568981cf801d')}
-                    >
-                      NAVIC
-                    </button>
+                      {teams.map((team) => (
+                        <button onClick={makeBid.bind(null, team._id)}>
+                          {team.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div>
-                    <p>Bid history</p>
-                    {auctionData.currentPlayer.bids.map((bidId) => (
-                      <p>{bidId}</p>
+                    <p>History</p>
+                    {mappedData.bidHistory.map((bid) => (
+                      <p>
+                        {bid.teamName} raised {bid.amount}
+                      </p>
                     ))}
                   </div>
                 </React.Fragment>
@@ -177,26 +316,25 @@ const Auction = () => {
               rowSpacing={1}
               columnSpacing={2}
             >
-              {teams.map((team) => (
+              {Object.values(mappedData.teamStats).map((team) => (
                 <Grid
                   item
                   sx={{
                     border: '1px solid',
-                    height: 300,
+                    height: 170,
                     m: 2,
                     borderRadius: 2,
                     overflowY: 'auto',
                   }}
-                  xs={4}
+                  xs={3}
                 >
-                  <p>{team.name}</p>
-                  <p>Players</p>
-                  {getMappedPlayers(team._id).map((player) => (
-                    <React.Fragment>
-                      <p>name: {player.name}</p>
-                      <p>skill: {player.skill}</p>
-                    </React.Fragment>
-                  ))}
+                  <p>
+                    {team.teamName} {team.total}/10
+                  </p>
+                  <p>Batsman {team.batsman}</p>
+                  <p>bowlers {team.bowlers}</p>
+                  <p>allRounders {team.allRounders}</p>
+                  {}
                 </Grid>
               ))}
             </Grid>
